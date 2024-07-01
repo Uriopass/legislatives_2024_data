@@ -47,9 +47,15 @@ def generateTriangulaire(svg):
         elus = []
         for row in data:
             if row[5] == 'QUALIF T2':
-                elus.append(row[1])
+                elus.append((row[1], row[3]))
         if len(elus) >= 3:
             path.setAttribute('style', f'fill:#FF5555;')
+            titleNode = path.childNodes[1].firstChild
+            if titleNode.nodeValue is not None:
+                vals = []
+                for elu, score in elus:
+                    vals.append(f'{elu} {score}%')
+                titleNode.nodeValue = titleNode.nodeValue + '\n' + ', '.join(vals)
 
     with open('triangulaires.svg', 'w', encoding='UTF-8') as svg_file:
         xml = str(svg.toxml())
@@ -62,6 +68,10 @@ def generateTriangulaireColor(svg):
         'RN-UG': '#FF0000',
         'RN-ENS': '#FFFF00',
         'RN-LR': '#0000FF',
+        'RN-DVD': '#9999FF',
+        'RN-DVG': '#FF9999',
+        'RN-DVC': '#FFFF99',
+        'RN-HOR': '#0000aa',
     }
     paths = svg.getElementsByTagName('path')
     for path in paths:
@@ -71,17 +81,25 @@ def generateTriangulaireColor(svg):
             continue
 
         elus = []
+        elus_score = []
         for row in data:
             if row[5] == 'QUALIF T2':
                 elus.append(row[1])
+                elus_score.append(row[3])
         if len(elus) >= 3:
             col = colorCoding.get('-'.join(elus[:2]))
             if col is None and elus[0] == 'RN':
-                print(elus)
+                col = '#aa77aa'
             if col is None:
                 col = '#777777'
 
             path.setAttribute('style', f'fill:{col};')
+            titleNode = path.childNodes[1].firstChild
+            if titleNode.nodeValue is not None:
+                vals = []
+                for elu, score in zip(elus, elus_score):
+                    vals.append(f'{elu} {score}%')
+                titleNode.nodeValue = titleNode.nodeValue + '\n' + ', '.join(vals)
 
     with open('triangulaires_rn.svg', 'w', encoding='UTF-8') as svg_file:
         xml = str(svg.toxml())
