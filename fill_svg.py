@@ -55,4 +55,6 @@ if __name__ == '__main__':
             path.setAttribute('style', 'fill: #FF0000;')
 
     with open('triangulaires.svg', 'w', encoding='UTF-8') as svg_file:
-        svg_file.write(svg.toxml())
+        xml = str(svg.toxml())
+        xml = xml.replace('{{TITRE}}', 'Triangulaires')
+        svg_file.write(xml)
