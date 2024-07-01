@@ -36,10 +36,7 @@ def parseSVG():
         return minidom.parse(svg_file)
 
 
-if __name__ == '__main__':
-    results = parseResults()
-
-    svg = parseSVG()
+def generateTriangulaire(svg):
     paths = svg.getElementsByTagName('path')
     for path in paths:
         id = path.getAttribute('id')
@@ -47,14 +44,54 @@ if __name__ == '__main__':
         if data is None:
             continue
 
-        count_elus = 0
+        elus = []
         for row in data:
             if row[5] == 'QUALIF T2':
-                count_elus += 1
-        if count_elus >= 3:
-            path.setAttribute('style', 'fill: #FF0000;')
+                elus.append(row[1])
+        if len(elus) >= 3:
+            path.setAttribute('style', f'fill:#FF5555;')
 
     with open('triangulaires.svg', 'w', encoding='UTF-8') as svg_file:
         xml = str(svg.toxml())
         xml = xml.replace('{{TITRE}}', 'Triangulaires')
         svg_file.write(xml)
+
+
+def generateTriangulaireColor(svg):
+    colorCoding = {
+        'RN-UG': '#FF0000',
+        'RN-ENS': '#FFFF00',
+        'RN-LR': '#0000FF',
+    }
+    paths = svg.getElementsByTagName('path')
+    for path in paths:
+        id = path.getAttribute('id')
+        data = results.get(id)
+        if data is None:
+            continue
+
+        elus = []
+        for row in data:
+            if row[5] == 'QUALIF T2':
+                elus.append(row[1])
+        if len(elus) >= 3:
+            col = colorCoding.get('-'.join(elus[:2]))
+            if col is None and elus[0] == 'RN':
+                print(elus)
+            if col is None:
+                col = '#777777'
+
+            path.setAttribute('style', f'fill:{col};')
+
+    with open('triangulaires_rn.svg', 'w', encoding='UTF-8') as svg_file:
+        xml = str(svg.toxml())
+        xml = xml.replace('{{TITRE}}', 'Triangulaires avec le RN en tête')
+        svg_file.write(xml)
+
+
+if __name__ == '__main__':
+    results = parseResults()
+
+    svg = parseSVG()
+    generateTriangulaire(svg.cloneNode(True))
+    generateTriangulaireColor(svg.cloneNode(True))
